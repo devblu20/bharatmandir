@@ -11,9 +11,22 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: { en: { translation: en }, hi: { translation: hi }, mr: { translation: mr }, ta: { translation: ta } },
+    resources: {
+      en: { translation: en },
+      hi: { translation: hi },
+      mr: { translation: mr },
+      ta: { translation: ta },
+    },
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
+
+    // Save user's chosen language to localStorage
+    // so it persists on refresh
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'bharatmandir_lang',
+    },
   });
 
 export default i18n;

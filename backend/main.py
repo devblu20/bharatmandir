@@ -52,8 +52,14 @@ app.add_middleware(
 async def startup_event():
     """Initialize DB connection pool when app starts."""
     print("🚀 BharatMandir API starting...")
-    get_pool()
-    print("✅ Database pool ready")
+    try:
+        get_pool()
+        print("✅ Database pool ready")
+    except Exception as e:
+        # ⚠️ App still starts — DB will retry on first request
+        # This is useful when network/DNS is temporarily unavailable
+        print(f"⚠️  Could not connect to DB on startup: {e}")
+        print("🔄  Will retry connection on first API request...")
 
 
 @app.on_event("shutdown")
@@ -99,7 +105,7 @@ def health_check():
         return {
             "status":        "healthy",
             "database":      "connected",
-            "total_temples": result['count']
+            "total_temples": result["count"]
         }
     except Exception as e:
         return {

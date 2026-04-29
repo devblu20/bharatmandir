@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useLang } from '../LangContext';
 import { translateTemples, translateTemple } from '../services/translate';
 
 // Hook for a list of temples
 export function useTranslatedTemples(temples) {
-  const { i18n }  = useTranslation();
-  const [translated, setTranslated] = useState(temples);
+  const { lang }                      = useLang();
+  const [translated,  setTranslated]  = useState(temples);
   const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
@@ -13,33 +13,33 @@ export function useTranslatedTemples(temples) {
       setTranslated(temples);
       return;
     }
-    if (i18n.language === 'en') {
+    if (lang === 'en') {
       setTranslated(temples);
       return;
     }
     setTranslating(true);
-    translateTemples(temples, i18n.language)
+    translateTemples(temples, lang)
       .then(setTranslated)
       .finally(() => setTranslating(false));
-  }, [temples, i18n.language]);
+  }, [temples, lang]);
 
   return { translated, translating };
 }
 
 // Hook for a single temple
 export function useTranslatedTemple(temple) {
-  const { i18n }  = useTranslation();
-  const [translated, setTranslated] = useState(temple);
+  const { lang }                      = useLang();
+  const [translated,  setTranslated]  = useState(temple);
   const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     if (!temple) { setTranslated(temple); return; }
-    if (i18n.language === 'en') { setTranslated(temple); return; }
+    if (lang === 'en') { setTranslated(temple); return; }
     setTranslating(true);
-    translateTemple(temple, i18n.language)
+    translateTemple(temple, lang)
       .then(setTranslated)
       .finally(() => setTranslating(false));
-  }, [temple, i18n.language]);
+  }, [temple, lang]);
 
   return { translated, translating };
 }

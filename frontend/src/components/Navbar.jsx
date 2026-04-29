@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Map } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLang } from '../LangContext';
 
 export default function Navbar() {
-  const [query,    setQuery]    = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [query,   setQuery] = useState('');
   const navigate  = useNavigate();
   const location  = useLocation();
+  const { t }               = useTranslation();
+  const { lang, changeLang } = useLang();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -19,17 +22,16 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const NAV_LINKS = [
-    { to: '/',              label: 'Home' },
-    { to: '/search',        label: '🔍 Search' },
-    { to: '/map',           label: '🗺️ Map View' },
-    { to: '/route-planner', label: '🛣️ Route Planner' },
+    { to: '/',              label: t('nav.home') },
+    { to: '/search',        label: t('nav.search') },
+    { to: '/map',           label: t('nav.map') },
+    { to: '/route-planner', label: t('nav.route') },
   ];
 
   const tickerText = '🔱 OM NAMAH SHIVAYA  ·  JAI SHRI RAM  ·  HAR HAR MAHADEV  ·  JAI MATA DI  ·  JAI GANESH  ·  HARE KRISHNA HARE RAM  ·  ';
 
   return (
     <>
-      {/* Scrolling Ticker */}
       <div className="ticker-wrap">
         <div className="ticker-track">
           <span className="ticker-content">{tickerText}{tickerText}</span>
@@ -39,28 +41,27 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar-inner">
 
-          {/* Logo */}
           <Link to="/" className="nav-logo">
             <span className="nav-logo-icon">🛕</span>
             <div>
               <span className="nav-logo-name">BharatMandir</span>
-              <span className="nav-logo-sub">Temple Discovery Platform</span>
+              <span className="nav-logo-sub">{t('nav.logo_sub')}</span>
             </div>
           </Link>
 
-          {/* Search */}
           <form className="nav-search-form" onSubmit={handleSearch}>
             <Search size={16} className="nav-search-icon" />
             <input
+              id="nav-search"
+              name="nav-search"
               className="nav-search-input"
               type="text"
-              placeholder="Search temples, deities, cities..."
+              placeholder={t('search_placeholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </form>
 
-          {/* Nav Links */}
           <div className="nav-actions" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {NAV_LINKS.map(link => (
               <Link
@@ -83,6 +84,35 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            <div style={{ width: 1, height: 24, background: 'var(--cream-dark)', margin: '0 4px' }} />
+
+            <select
+              value={lang}
+              onChange={(e) => changeLang(e.target.value)}
+              style={{
+                padding: '7px 28px 7px 12px',
+                borderRadius: 50,
+                border: '2px solid var(--cream-dark)',
+                background: 'white',
+                color: 'var(--brown)',
+                fontFamily: 'var(--font-display)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                outline: 'none',
+                letterSpacing: '.05em',
+                appearance: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B84D00' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 10px center',
+              }}
+            >
+              <option value="en">🌐 English</option>
+              <option value="hi">🇮🇳 हिंदी</option>
+              <option value="mr">🟠 मराठी</option>
+              <option value="ta">🌺 தமிழ்</option>
+            </select>
           </div>
 
         </div>

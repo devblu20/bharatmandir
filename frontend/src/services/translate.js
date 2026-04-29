@@ -6,7 +6,6 @@ const FIELD_MAP = {
   ta: 'Tamil',
 };
 
-// Fields from backend that should be translated
 const TRANSLATABLE_FIELDS = [
   'name', 'history', 'significance', 'description',
   'primary_deity', 'sect', 'temple_type', 'architecture_style',
@@ -41,7 +40,7 @@ export async function translateTemple(temple, targetLang) {
       method: 'POST',
       headers: HEADERS,
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',  // faster + cheaper for translation
         max_tokens: 1000,
         messages: [{
           role: 'user',
@@ -62,7 +61,7 @@ Return only the JSON object, no explanation.`,
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Anthropic API error:', data);
+      console.error('Anthropic API error:', data.error?.message || data);
       return temple;
     }
 
@@ -80,13 +79,11 @@ Return only the JSON object, no explanation.`,
   }
 }
 
-// Translate an array of temples
 export async function translateTemples(temples, targetLang) {
   if (targetLang === 'en') return temples;
   return Promise.all(temples.map(t => translateTemple(t, targetLang)));
 }
 
-// Translate a single string
 export async function translateText(text, targetLang) {
   if (targetLang === 'en' || !text) return text;
 
@@ -98,7 +95,7 @@ export async function translateText(text, targetLang) {
       method: 'POST',
       headers: HEADERS,
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 200,
         messages: [{
           role: 'user',
@@ -110,7 +107,7 @@ export async function translateText(text, targetLang) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Anthropic API error:', data);
+      console.error('Anthropic API error:', data.error?.message || data);
       return text;
     }
 
@@ -122,7 +119,6 @@ export async function translateText(text, targetLang) {
   }
 }
 
-// Clear cache (call this if needed)
 export function clearTranslationCache() {
   CACHE.clear();
 }
