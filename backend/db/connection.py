@@ -20,24 +20,10 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 # ─────────────────────────────────────────────
-# Database Configuration
-# ─────────────────────────────────────────────
-
-DB_CONFIG = {
-    "host":     os.getenv("DB_HOST", "localhost"),
-    "port":     int(os.getenv("DB_PORT", 5432)),
-    "dbname":   os.getenv("DB_NAME", "bharatmandir"),
-    "user":     os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", ""),
-}
-
-
-# ─────────────────────────────────────────────
 # Connection Pool (Production Ready)
 # ─────────────────────────────────────────────
 # minconn=2  → always keep 2 connections open (ready to use)
 # maxconn=10 → never open more than 10 at once
-# At 10,000 temples with 1000 users, 10 connections is enough.
 
 _pool = None  # Global pool instance
 
@@ -45,11 +31,13 @@ _pool = None  # Global pool instance
 def get_pool():
     global _pool
     if _pool is None:
+        if not DATABASE_URL:
+            raise ValueError("DATABASE_URL is not set in your .env file")
         try:
             _pool = psycopg2.pool.ThreadedConnectionPool(
                 minconn=2,
                 maxconn=10,
-                dsn=DATABASE_URL  # 🔥 THIS IS THE KEY CHANGE
+                dsn=DATABASE_URL
             )
             print("✅ Connected to Neon DB successfully")
         except psycopg2.OperationalError as e:
@@ -75,30 +63,30 @@ def close_pool():
 def get_db_connection():
     """
     Context manager for database connections.
-    
+
     Usage:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT ...")
-    
+
     Automatically:
     - Gets connection from pool
     - Commits on success
     - Rolls back on error
     - Returns connection to pool
     """
-    pool = get_pool()
-    conn = pool.getconn()
-    
+    p = get_pool()
+    conn = p.getconn()
+
     try:
         yield conn
-        conn.commit()  # Auto-commit on success
+        conn.commit()       # Auto-commit on success
     except Exception as e:
-        conn.rollback()  # Auto-rollback on any error
+        conn.rollback()     # Auto-rollback on any error
         print(f"❌ Database error, rolling back: {e}")
         raise
     finally:
-        pool.putconn(conn)  # Always return to pool
+        p.putconn(conn)     # Always return to pool
 
 
 @contextmanager
@@ -106,7 +94,7 @@ def get_db_cursor(cursor_factory=None):
     """
     Context manager for database cursors.
     RealDictCursor returns rows as dicts instead of tuples.
-    
+
     Usage:
         with get_db_cursor() as cur:
             cur.execute("SELECT * FROM temples")
@@ -114,7 +102,7 @@ def get_db_cursor(cursor_factory=None):
             # rows[0]['name'] ← dict access (much better!)
     """
     factory = cursor_factory or extras.RealDictCursor
-    
+
     with get_db_connection() as conn:
         cursor = conn.cursor(cursor_factory=factory)
         try:
@@ -134,15 +122,15 @@ def test_connection():
             cur.execute("SELECT version();")
             version = cur.fetchone()
             print(f"✅ Connected to: {version['version'][:50]}")
-            
+
             cur.execute("SELECT COUNT(*) as count FROM temples;")
             result = cur.fetchone()
             print(f"✅ Temples in database: {result['count']}")
-            
+
             cur.execute("SELECT PostGIS_Version();")
             postgis = cur.fetchone()
             print(f"✅ PostGIS version: {postgis['postgis_version'][:30]}")
-            
+
         return True
     except Exception as e:
         print(f"❌ Connection test failed: {e}")

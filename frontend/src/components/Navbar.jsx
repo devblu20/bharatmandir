@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Map } from 'lucide-react';
+import { Search, PlusCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useLang } from '../LangContext';
 
 export default function Navbar() {
-  const [query,    setQuery]    = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const [query,    setQuery]   = useState('');
+  const navigate   = useNavigate();
+  const location   = useLocation();
+  const { t }                  = useTranslation();
+  const { lang, changeLang }   = useLang();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -19,17 +22,16 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const NAV_LINKS = [
-    { to: '/',              label: 'Home' },
-    { to: '/search',        label: '🔍 Search' },
-    { to: '/map',           label: '🗺️ Map View' },
-    { to: '/route-planner', label: '🛣️ Route Planner' },
+    { to: '/',              label: t('nav.home') },
+    { to: '/search',        label: t('nav.search') },
+    { to: '/map',           label: t('nav.map') },
+    { to: '/route-planner', label: t('nav.route') },
   ];
 
   const tickerText = '🔱 OM NAMAH SHIVAYA  ·  JAI SHRI RAM  ·  HAR HAR MAHADEV  ·  JAI MATA DI  ·  JAI GANESH  ·  HARE KRISHNA HARE RAM  ·  ';
 
   return (
     <>
-      {/* Scrolling Ticker */}
       <div className="ticker-wrap">
         <div className="ticker-track">
           <span className="ticker-content">{tickerText}{tickerText}</span>
@@ -39,50 +41,58 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar-inner">
 
-          {/* Logo */}
           <Link to="/" className="nav-logo">
             <span className="nav-logo-icon">🛕</span>
             <div>
               <span className="nav-logo-name">BharatMandir</span>
-              <span className="nav-logo-sub">Temple Discovery Platform</span>
+              <span className="nav-logo-sub">{t('nav.logo_sub')}</span>
             </div>
           </Link>
 
-          {/* Search */}
           <form className="nav-search-form" onSubmit={handleSearch}>
             <Search size={16} className="nav-search-icon" />
             <input
+              id="nav-search"
+              name="nav-search"
               className="nav-search-input"
               type="text"
-              placeholder="Search temples, deities, cities..."
+              placeholder={t('search_placeholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </form>
 
-          {/* Nav Links */}
-          <div className="nav-actions" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            {NAV_LINKS.map(link => (
+          <div className="nav-actions">
+            {NAV_LINKS.map((link, index) => (
               <Link
                 key={link.to}
                 to={link.to}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 50,
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 12,
-                  letterSpacing: '.05em',
-                  textDecoration: 'none',
-                  transition: 'var(--transition)',
-                  background: isActive(link.to) ? 'var(--saffron)' : 'transparent',
-                  color: isActive(link.to) ? 'white' : 'var(--text-mid)',
-                  border: `2px solid ${isActive(link.to) ? 'var(--saffron)' : 'var(--cream-dark)'}`,
-                  whiteSpace: 'nowrap',
-                }}
+                className={`nav-link nav-link-${index}${isActive(link.to) ? ' active' : ''}`}
               >
                 {link.label}
               </Link>
             ))}
+
+            <div className="nav-divider" />
+
+            {/* ── Add Temple button ───────────────────────────────────────── */}
+<Link to="/admin/add" className="nav-add-btn">
+  <PlusCircle size={15} />
+  <span>Add Temple</span>
+</Link>
+
+            <div className="nav-divider" />
+
+            <select
+              className="nav-lang-select"
+              value={lang}
+              onChange={(e) => changeLang(e.target.value)}
+            >
+              <option value="en">🌐 English</option>
+              <option value="hi">🇮🇳 हिंदी</option>
+              <option value="mr">🟠 मराठी</option>
+              <option value="ta">🌺 தமிழ்</option>
+            </select>
           </div>
 
         </div>
