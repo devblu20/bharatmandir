@@ -1,15 +1,16 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { LangProvider } from './LangContext';  // ← this line must be here
-import HomePage          from './pages/HomePage';
-import TempleDetailPage  from './pages/TempleDetailPage';
-import TempleQRPage      from './pages/TempleQRPage';
-import MapPage           from './pages/MapPage';
-import SearchPage        from './pages/SearchPage';
-import RoutePlannerPage  from './pages/RoutePlannerPage';
+import { LangProvider } from './LangContext';
+import HomePage           from './pages/HomePage';
+import TempleDetailPage   from './pages/TempleDetailPage';
+import TempleQRPage       from './pages/TempleQRPage';
+import MapPage            from './pages/MapPage';
+import SearchPage         from './pages/SearchPage';
+import RoutePlannerPage   from './pages/RoutePlannerPage';
+import AdminAddTemplePage from './pages/AdminAddTemplePage';
 
 export default function App() {
   return (
-    <LangProvider>                             {/* ← must wrap everything */}
+    <LangProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/"              element={<HomePage />} />
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/map"           element={<MapPage />} />
           <Route path="/search"        element={<SearchPage />} />
           <Route path="/route-planner" element={<RoutePlannerPage />} />
+          <Route path="/admin/add"     element={<AdminAddTemplePage />} />
         </Routes>
       </BrowserRouter>
     </LangProvider>

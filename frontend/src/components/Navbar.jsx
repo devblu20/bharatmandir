@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, PlusCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../LangContext';
 
@@ -62,7 +62,6 @@ export default function Navbar() {
             />
           </form>
 
-          {/* nav-actions: NO inline style gap/flex — CSS handles it */}
           <div className="nav-actions">
             {NAV_LINKS.map((link, index) => (
               <Link
@@ -73,6 +72,14 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            <div className="nav-divider" />
+
+            {/* ── Add Temple button ───────────────────────────────────────── */}
+<Link to="/admin/add" className="nav-add-btn">
+  <PlusCircle size={15} />
+  <span>Add Temple</span>
+</Link>
 
             <div className="nav-divider" />
 

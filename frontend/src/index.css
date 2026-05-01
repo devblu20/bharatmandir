@@ -415,3 +415,40 @@ a{text-decoration:none;color:inherit;}button{font-family:inherit;}img{max-width:
   .qr-full-name { font-size: 17px; }
   .qr-full-platform { font-size: 11px; }
 }
+
+
+.nav-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: .05em;
+  text-decoration: none;
+  transition: var(--transition);
+  background: transparent;           /* ← outline by default */
+  color: var(--saffron);             /* ← saffron text */
+  border: 2px solid var(--saffron);  /* ← saffron border */
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nav-add-btn:hover {
+  background: var(--saffron);
+  color: white;
+  box-shadow: 0 4px 14px rgba(232, 101, 10, .35);
+}
+
+.nav-add-btn.active {
+  background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+  color: white;
+  border-color: var(--saffron);
+  box-shadow: 0 3px 12px rgba(232, 101, 10, .3);
+}
+
+@media (max-width: 480px) {
+  .nav-add-btn span { display: none; }
+  .nav-add-btn { padding: 8px 10px; }
+}

@@ -23,3 +23,19 @@ export const routeAPI = {
   plan:     (data)    => api.post('/api/route/plan', data),
   presets:  ()        => api.get('/api/route/presets'),
 };
+
+export const adminAPI = {
+  // Temple CRUD
+  createTemple: (formData) => api.post('/api/admin/temples', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  listAll: (page = 1) => api.get('/api/admin/temples', { params: { page } }),
+
+  // Media
+  uploadMedia: (templeId, formData) =>
+    api.post(`/api/admin/temples/${templeId}/media`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  getMedia:    (templeId)  => api.get(`/api/admin/temples/${templeId}/media`),
+  deleteMedia: (mediaId)   => api.delete(`/api/admin/media/${mediaId}`),
+};
