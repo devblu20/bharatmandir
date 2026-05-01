@@ -13,8 +13,11 @@ from contextlib import contextmanager
 
 # Load environment variables from .env file
 load_dotenv()
-
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+# print(f"DEBUG DATABASE_URL = [{DATABASE_URL}]")  # add this line
+
+
 
 # ─────────────────────────────────────────────
 # Database Configuration
