@@ -1,52 +1,49 @@
 import { useState } from 'react';
 import { MapPin, Navigation, Clock, Route, Sparkles, ChevronRight, Star, AlertCircle, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
+const TRAVEL_MODES = [
+  { value: 'car',   label: '🚗 Car',   desc: 'Fastest route' },
+  { value: 'bike',  label: '🏍️ Bike',  desc: 'Explore freely' },
+  { value: 'train', label: '🚂 Train', desc: 'Rail + walk' },
+];
+
+const TIME_OPTIONS = [
+  { value: '2',  label: '2 hrs' },
+  { value: '4',  label: '4 hrs' },
+  { value: '6',  label: '6 hrs' },
+  { value: '8',  label: 'Full Day' },
+  { value: '12', label: '12 hrs' },
+];
+
+const PREF_OPTIONS = [
+  '🔱 Shiv Temples',
+  '⭐ Jyotirlinga',
+  '🌸 Shaktipeeth',
+  '🪷 Vishnu Temples',
+  '🐘 Ganesha Temples',
+  '🏔️ Famous & Historic',
+  '🌿 Peaceful & Serene',
+];
+
+const PRESET_ROUTES = [
+  { from: 'Indore', to: 'Ujjain',     icon: '🔱', label: 'Indore → Ujjain' },
+  { from: 'Varanasi', to: 'Prayagraj', icon: '🪔', label: 'Varanasi → Prayagraj' },
+  { from: 'Mumbai', to: 'Shirdi',     icon: '🙏', label: 'Mumbai → Shirdi' },
+  { from: 'Delhi', to: 'Mathura',     icon: '🎵', label: 'Delhi → Mathura' },
+];
+
 export default function RoutePlannerPage() {
-  const { t, i18n } = useTranslation();
-
-  const TRAVEL_MODES = [
-    { value: 'car',   label: '🚗 ' + t('route.mode_car'),   desc: t('route.mode_car_desc') },
-    { value: 'bike',  label: '🏍️ ' + t('route.mode_bike'),  desc: t('route.mode_bike_desc') },
-    { value: 'train', label: '🚂 ' + t('route.mode_train'), desc: t('route.mode_train_desc') },
-  ];
-
-  const TIME_OPTIONS = [
-    { value: '2',  label: '2 ' + t('route.hrs') },
-    { value: '4',  label: '4 ' + t('route.hrs') },
-    { value: '6',  label: '6 ' + t('route.hrs') },
-    { value: '8',  label: t('route.full_day') },
-    { value: '12', label: '12 ' + t('route.hrs') },
-  ];
-
-  const PREF_OPTIONS = [
-    '🔱 ' + t('route.pref_shiv'),
-    '⭐ ' + t('route.pref_jyotirlinga'),
-    '🌸 ' + t('route.pref_shaktipeeth'),
-    '🪷 ' + t('route.pref_vishnu'),
-    '🐘 ' + t('route.pref_ganesha'),
-    '🏔️ ' + t('route.pref_famous'),
-    '🌿 ' + t('route.pref_peaceful'),
-  ];
-
-  const PRESET_ROUTES = [
-    { from: 'Indore',    to: 'Ujjain',     icon: '🔱', label: 'Indore → Ujjain' },
-    { from: 'Varanasi',  to: 'Prayagraj',  icon: '🪔', label: 'Varanasi → Prayagraj' },
-    { from: 'Mumbai',    to: 'Shirdi',     icon: '🙏', label: 'Mumbai → Shirdi' },
-    { from: 'Delhi',     to: 'Mathura',    icon: '🎵', label: 'Delhi → Mathura' },
-  ];
-
   const [form, setForm] = useState({
     start: '', destination: '', travel_mode: 'car',
     time_available: '6', preferences: [],
   });
-  const [loading, setLoading] = useState(false);
-  const [result,  setResult]  = useState(null);
-  const [error,   setError]   = useState(null);
-  const [apiKey,  setApiKey]  = useState(() => localStorage.getItem('bm_openai_key') || '');
-  const [showKey, setShowKey] = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [result,  setResult]    = useState(null);
+  const [error,   setError]     = useState(null);
+  const [apiKey,  setApiKey]    = useState(() => localStorage.getItem('bm_openai_key') || '');
+  const [showKey, setShowKey]   = useState(false);
 
   const togglePref = (p) => {
     setForm(f => ({
@@ -66,21 +63,13 @@ export default function RoutePlannerPage() {
     setForm(f => ({ ...f, start: preset.from, destination: preset.to }));
   };
 
-  // Build language instruction for OpenAI based on current language
-  const getLangInstruction = () => {
-    const langs = { hi: 'Hindi', mr: 'Marathi', ta: 'Tamil' };
-    const lang  = langs[i18n.language];
-    if (!lang) return '';
-    return `\n\nIMPORTANT: Return ALL text fields (why_visit, arrival_order_reason, insights) in ${lang} language. Keep temple names, place names, and deity names in their original form.`;
-  };
-
   const handleSubmit = async () => {
     if (!form.start.trim() || !form.destination.trim()) {
-      setError(t('route.error_fields'));
+      setError('Please enter both start and destination.');
       return;
     }
     if (!apiKey.trim()) {
-      setError(t('route.error_key'));
+      setError('Please enter your OpenAI API key first.');
       setShowKey(true);
       return;
     }
@@ -88,7 +77,7 @@ export default function RoutePlannerPage() {
     setError(null);
     setResult(null);
 
-    const systemPrompt = `You are an advanced AI travel and spiritual guide for BharatMandir — India's temple discovery platform.
+    const systemPrompt = `You are an advanced AI travel and spiritual guide for BharatMandir — India's temple discovery platform. 
 Your task: Suggest temples that naturally fall along the user's travel route.
 
 RULES:
@@ -129,7 +118,7 @@ OUTPUT FORMAT (strict JSON):
     "Crowd tips",
     "Special festival alerts or local tips"
   ]
-}${getLangInstruction()}`;
+}`;
 
     const userPrompt = `Plan a spiritual route:
 - From: ${form.start}
@@ -151,7 +140,7 @@ Suggest temples along this actual road route, create an optimized visiting plan.
           model: 'gpt-4o',
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user',   content: userPrompt },
+            { role: 'user', content: userPrompt },
           ],
           temperature: 0.4,
           max_tokens: 2000,
@@ -163,13 +152,13 @@ Suggest temples along this actual road route, create an optimized visiting plan.
         throw new Error(err.error?.message || 'OpenAI API error');
       }
 
-      const data   = await res.json();
-      let raw      = data.choices?.[0]?.message?.content || '';
-      raw          = raw.replace(/```json|```/g, '').trim();
+      const data = await res.json();
+      let raw = data.choices?.[0]?.message?.content || '';
+      raw = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(raw);
       setResult(parsed);
     } catch (e) {
-      setError(e.message || t('route.error_generic'));
+      setError(e.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -183,7 +172,10 @@ Suggest temples along this actual road route, create an optimized visiting plan.
         {/* Hero Banner */}
         <div style={{
           background: 'linear-gradient(135deg, var(--brown) 0%, var(--brown-mid) 60%, var(--saffron-dark) 100%)',
-          padding: '56px 24px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden',
+          padding: '56px 24px 48px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}>
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -196,13 +188,16 @@ Suggest temples along this actual road route, create an optimized visiting plan.
               borderRadius: 50, padding: '6px 20px', marginBottom: 16,
               color: '#FFD580', fontFamily: 'var(--font-hindi)', fontSize: 13, letterSpacing: '.1em',
             }}>
-              <Route size={14} /> {t('route.badge')}
+              <Route size={14} /> AI Route Planner
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, color: 'white', fontSize: 'clamp(28px,5vw,54px)', marginBottom: 12 }}>
-              {t('route.hero_title')} <span style={{ color: 'var(--gold-light)' }}>{t('route.hero_title_span')}</span>
+            <h1 style={{
+              fontFamily: 'var(--font-display)', fontWeight: 900, color: 'white',
+              fontSize: 'clamp(28px,5vw,54px)', marginBottom: 12,
+            }}>
+              Your Journey, <span style={{ color: 'var(--gold-light)' }}>Divine Stopovers</span>
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 17, maxWidth: 540, margin: '0 auto' }}>
-              {t('route.hero_sub')}
+              Tell us where you're headed — we'll find every sacred temple along your path.
             </p>
           </div>
         </div>
@@ -218,11 +213,11 @@ Suggest temples along this actual road route, create an optimized visiting plan.
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Sparkles size={18} color="var(--gold)" />
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 13, color: 'var(--text-mid)' }}>
-                {apiKey ? t('route.key_saved') : t('route.key_missing')}
+                {apiKey ? '✅ OpenAI Key saved (browser only)' : '⚠️ No API key — add your OpenAI key to enable AI planning'}
               </span>
             </div>
             <button className="btn-outline" style={{ fontSize: 12, padding: '6px 16px' }} onClick={() => setShowKey(v => !v)}>
-              {showKey ? t('route.key_hide') : apiKey ? t('route.key_change') : t('route.key_add')}
+              {showKey ? 'Hide' : apiKey ? 'Change Key' : 'Add Key'}
             </button>
           </div>
 
@@ -232,7 +227,7 @@ Suggest temples along this actual road route, create an optimized visiting plan.
               border: '2px solid var(--saffron)', marginBottom: 24, boxShadow: '0 4px 20px rgba(232,101,10,0.15)',
             }}>
               <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 10 }}>
-                {t('route.key_note')}
+                Your key is stored only in your browser (localStorage). Never sent to our servers.
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
                 <input
@@ -242,10 +237,11 @@ Suggest temples along this actual road route, create an optimized visiting plan.
                   placeholder="sk-..."
                   style={{
                     flex: 1, padding: '10px 14px', borderRadius: 8,
-                    border: '2px solid var(--cream-dark)', fontFamily: 'var(--font-body)', fontSize: 14, outline: 'none',
+                    border: '2px solid var(--cream-dark)', fontFamily: 'var(--font-body)', fontSize: 14,
+                    outline: 'none',
                   }}
                 />
-                <button className="btn-primary" style={{ padding: '10px 20px' }} onClick={saveKey}>{t('route.key_save')}</button>
+                <button className="btn-primary" style={{ padding: '10px 20px' }} onClick={saveKey}>Save</button>
               </div>
             </div>
           )}
@@ -253,7 +249,7 @@ Suggest temples along this actual road route, create an optimized visiting plan.
           {/* Quick Presets */}
           <div style={{ marginBottom: 28 }}>
             <p style={{ fontFamily: 'var(--font-display)', fontSize: 12, color: 'var(--text-light)', letterSpacing: '.08em', marginBottom: 10 }}>
-              {t('route.popular_routes')}
+              POPULAR PILGRIM ROUTES
             </p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {PRESET_ROUTES.map(p => (
@@ -264,7 +260,8 @@ Suggest temples along this actual road route, create an optimized visiting plan.
                     padding: '8px 18px', borderRadius: 50, border: '2px solid var(--cream-dark)',
                     background: (form.start === p.from && form.destination === p.to) ? 'var(--saffron)' : 'white',
                     color: (form.start === p.from && form.destination === p.to) ? 'white' : 'var(--text-mid)',
-                    cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14, transition: 'var(--transition)',
+                    cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14,
+                    transition: 'var(--transition)',
                   }}
                 >
                   {p.icon} {p.label}
@@ -276,42 +273,57 @@ Suggest temples along this actual road route, create an optimized visiting plan.
           {/* Main Form */}
           <div style={{
             background: 'white', borderRadius: 'var(--radius-lg)', padding: '32px',
-            border: '1px solid var(--cream-dark)', boxShadow: '0 4px 24px var(--shadow)', marginBottom: 32,
+            border: '1px solid var(--cream-dark)', boxShadow: '0 4px 24px var(--shadow)',
+            marginBottom: 32,
           }}>
             {/* Start + Destination */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 12, alignItems: 'center', marginBottom: 24 }}>
               <div>
                 <label style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '.08em', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>
-                  {t('route.from')}
+                  FROM
                 </label>
                 <div style={{ position: 'relative' }}>
                   <MapPin size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--saffron)' }} />
                   <input
                     value={form.start}
                     onChange={e => setForm(f => ({ ...f, start: e.target.value }))}
-                    placeholder={t('route.from_placeholder')}
-                    style={{ width: '100%', padding: '12px 14px 12px 38px', border: '2px solid var(--cream-dark)', borderRadius: 'var(--radius)', fontFamily: 'var(--font-body)', fontSize: 16, outline: 'none', transition: 'var(--transition)' }}
+                    placeholder="e.g. Indore"
+                    style={{
+                      width: '100%', padding: '12px 14px 12px 38px',
+                      border: '2px solid var(--cream-dark)', borderRadius: 'var(--radius)',
+                      fontFamily: 'var(--font-body)', fontSize: 16, outline: 'none',
+                      transition: 'var(--transition)',
+                    }}
                     onFocus={e => e.target.style.borderColor = 'var(--saffron)'}
                     onBlur={e => e.target.style.borderColor = 'var(--cream-dark)'}
                   />
                 </div>
               </div>
 
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--cream-dark)', flexShrink: 0 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%', background: 'var(--cream)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid var(--cream-dark)', flexShrink: 0,
+              }}>
                 <ChevronRight size={18} color="var(--saffron)" />
               </div>
 
               <div>
                 <label style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '.08em', color: 'var(--text-light)', display: 'block', marginBottom: 6 }}>
-                  {t('route.to')}
+                  TO
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Navigation size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--brown-mid)' }} />
                   <input
                     value={form.destination}
                     onChange={e => setForm(f => ({ ...f, destination: e.target.value }))}
-                    placeholder={t('route.to_placeholder')}
-                    style={{ width: '100%', padding: '12px 14px 12px 38px', border: '2px solid var(--cream-dark)', borderRadius: 'var(--radius)', fontFamily: 'var(--font-body)', fontSize: 16, outline: 'none', transition: 'var(--transition)' }}
+                    placeholder="e.g. Ujjain"
+                    style={{
+                      width: '100%', padding: '12px 14px 12px 38px',
+                      border: '2px solid var(--cream-dark)', borderRadius: 'var(--radius)',
+                      fontFamily: 'var(--font-body)', fontSize: 16, outline: 'none',
+                      transition: 'var(--transition)',
+                    }}
                     onFocus={e => e.target.style.borderColor = 'var(--saffron)'}
                     onBlur={e => e.target.style.borderColor = 'var(--cream-dark)'}
                   />
@@ -323,7 +335,7 @@ Suggest temples along this actual road route, create an optimized visiting plan.
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
               <div>
                 <label style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '.08em', color: 'var(--text-light)', display: 'block', marginBottom: 8 }}>
-                  {t('route.travel_mode')}
+                  TRAVEL MODE
                 </label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {TRAVEL_MODES.map(m => (
@@ -348,22 +360,23 @@ Suggest temples along this actual road route, create an optimized visiting plan.
               <div>
                 <label style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '.08em', color: 'var(--text-light)', display: 'block', marginBottom: 8 }}>
                   <Clock size={11} style={{ display: 'inline', marginRight: 4 }} />
-                  {t('route.time_available')}
+                  TIME AVAILABLE
                 </label>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  {TIME_OPTIONS.map(opt => (
+                  {TIME_OPTIONS.map(t => (
                     <button
-                      key={opt.value}
-                      onClick={() => setForm(f => ({ ...f, time_available: opt.value }))}
+                      key={t.value}
+                      onClick={() => setForm(f => ({ ...f, time_available: t.value }))}
                       style={{
                         flex: 1, padding: '10px 4px', borderRadius: 'var(--radius)',
-                        border: `2px solid ${form.time_available === opt.value ? 'var(--saffron)' : 'var(--cream-dark)'}`,
-                        background: form.time_available === opt.value ? 'var(--saffron)' : 'white',
-                        color: form.time_available === opt.value ? 'white' : 'var(--text-mid)',
-                        cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 12, transition: 'var(--transition)',
+                        border: `2px solid ${form.time_available === t.value ? 'var(--saffron)' : 'var(--cream-dark)'}`,
+                        background: form.time_available === t.value ? 'var(--saffron)' : 'white',
+                        color: form.time_available === t.value ? 'white' : 'var(--text-mid)',
+                        cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 12,
+                        transition: 'var(--transition)',
                       }}
                     >
-                      {opt.label}
+                      {t.label}
                     </button>
                   ))}
                 </div>
@@ -373,11 +386,15 @@ Suggest temples along this actual road route, create an optimized visiting plan.
             {/* Preferences */}
             <div style={{ marginBottom: 28 }}>
               <label style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '.08em', color: 'var(--text-light)', display: 'block', marginBottom: 8 }}>
-                {t('route.preferences')}
+                TEMPLE PREFERENCES (optional)
               </label>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {PREF_OPTIONS.map(p => (
-                  <button key={p} onClick={() => togglePref(p)} className={form.preferences.includes(p) ? 'filter-chip active' : 'filter-chip'}>
+                  <button
+                    key={p}
+                    onClick={() => togglePref(p)}
+                    className={form.preferences.includes(p) ? 'filter-chip active' : 'filter-chip'}
+                  >
                     {p}
                   </button>
                 ))}
@@ -392,26 +409,33 @@ Suggest temples along this actual road route, create an optimized visiting plan.
               disabled={loading}
             >
               {loading
-                ? <><Loader2 size={18} style={{ animation: 'spin .8s linear infinite' }} /> {t('route.finding')}</>
-                : <><Route size={18} /> {t('route.plan_btn')}</>
+                ? <><Loader2 size={18} style={{ animation: 'spin .8s linear infinite' }} /> Finding Sacred Stops…</>
+                : <><Route size={18} /> Plan My Spiritual Route</>
               }
             </button>
           </div>
 
           {/* Error */}
           {error && (
-            <div style={{ background: '#FFF4F4', border: '1px solid #FFCDD2', borderRadius: 'var(--radius)', padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{
+              background: '#FFF4F4', border: '1px solid #FFCDD2', borderRadius: 'var(--radius)',
+              padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 10,
+            }}>
               <AlertCircle size={18} color="#D32F2F" style={{ flexShrink: 0, marginTop: 2 }} />
               <p style={{ color: '#C62828', fontSize: 14 }}>{error}</p>
             </div>
           )}
 
-          {/* Loading */}
+          {/* Loading Skeleton */}
           {loading && (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <div style={{ fontSize: 56, marginBottom: 16, animation: 'pulse-om 2s ease-in-out infinite' }}>🛕</div>
-              <p style={{ fontFamily: 'var(--font-hindi)', color: 'var(--text-light)', fontSize: 16 }}>{t('route.loading_text')}</p>
-              <p style={{ color: 'var(--text-light)', fontSize: 13, marginTop: 6 }}>{t('route.loading_sub')}</p>
+              <p style={{ fontFamily: 'var(--font-hindi)', color: 'var(--text-light)', fontSize: 16 }}>
+                Consulting the divine route map…
+              </p>
+              <p style={{ color: 'var(--text-light)', fontSize: 13, marginTop: 6 }}>
+                AI is mapping sacred temples along your journey
+              </p>
             </div>
           )}
 
@@ -419,7 +443,7 @@ Suggest temples along this actual road route, create an optimized visiting plan.
           {result && !loading && (
             <div style={{ animation: 'fadeDown .6s ease both' }}>
 
-              {/* Route Summary */}
+              {/* Route Summary Card */}
               <div style={{
                 background: 'linear-gradient(135deg, var(--brown) 0%, var(--brown-mid) 100%)',
                 borderRadius: 'var(--radius-lg)', padding: '28px 32px', marginBottom: 28,
@@ -427,26 +451,36 @@ Suggest temples along this actual road route, create an optimized visiting plan.
               }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontFamily: 'var(--font-display)', fontSize: 11, letterSpacing: '.1em', color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>
-                    {t('route.your_route')}
+                    YOUR ROUTE
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700 }}>{result.route_summary.start}</span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700 }}>
+                      {result.route_summary.start}
+                    </span>
                     <span style={{ color: 'var(--gold-light)', fontSize: 20 }}>→</span>
-                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700 }}>{result.route_summary.destination}</span>
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700 }}>
+                      {result.route_summary.destination}
+                    </span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 28 }}>
                   <div style={{ textAlign: 'center' }}>
-                    <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--gold-light)', fontWeight: 700 }}>{result.route_summary.total_distance}</span>
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{t('route.distance')}</span>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--gold-light)', fontWeight: 700 }}>
+                      {result.route_summary.total_distance}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Distance</span>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--gold-light)', fontWeight: 700 }}>{result.route_summary.estimated_travel_time}</span>
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{t('route.travel_time')}</span>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--gold-light)', fontWeight: 700 }}>
+                      {result.route_summary.estimated_travel_time}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Travel Time</span>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--gold-light)', fontWeight: 700 }}>{result.recommended_temples?.length || 0}</span>
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{t('route.temples')}</span>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--gold-light)', fontWeight: 700 }}>
+                      {result.recommended_temples?.length || 0}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>Temples</span>
                   </div>
                 </div>
               </div>
@@ -456,69 +490,100 @@ Suggest temples along this actual road route, create an optimized visiting plan.
                 {/* Temple Cards */}
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--brown)', marginBottom: 16 }}>
-                    🛕 {t('route.temples_along')}
+                    🛕 Temples Along Your Route
                   </h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {(result.recommended_temples || []).map((temple, i) => (
+                    {(result.recommended_temples || []).map((t, i) => (
                       <div key={i} style={{
                         background: 'white', borderRadius: 'var(--radius-lg)',
-                        border: `2px solid ${temple.importance === 'high' ? 'var(--saffron)' : 'var(--cream-dark)'}`,
+                        border: `2px solid ${t.importance === 'high' ? 'var(--saffron)' : 'var(--cream-dark)'}`,
                         padding: '20px 22px', boxShadow: '0 2px 12px var(--shadow)',
-                        transition: 'var(--transition)', position: 'relative', overflow: 'hidden',
+                        transition: 'var(--transition)',
+                        position: 'relative', overflow: 'hidden',
                       }}>
-                        {temple.importance === 'high' && (
+                        {t.importance === 'high' && (
                           <div style={{
                             position: 'absolute', top: 0, right: 0,
                             background: 'var(--saffron)', color: 'white',
                             fontSize: 10, fontFamily: 'var(--font-display)', letterSpacing: '.06em',
                             padding: '3px 12px', borderBottomLeftRadius: 10,
                           }}>
-                            ⭐ {t('route.must_visit')}
+                            ⭐ MUST VISIT
                           </div>
                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, color: 'var(--brown)', fontWeight: 700 }}>{temple.name}</h3>
+                          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, color: 'var(--brown)', fontWeight: 700 }}>
+                            {t.name}
+                          </h3>
                           <div style={{ display: 'flex', gap: 8, flexShrink: 0, marginLeft: 12 }}>
-                            <span style={{ background: 'var(--cream)', borderRadius: 50, padding: '3px 10px', fontSize: 12, color: 'var(--text-mid)', fontFamily: 'var(--font-display)' }}>
-                              📍 {temple.distance_from_route_km}
+                            <span style={{
+                              background: 'var(--cream)', borderRadius: 50, padding: '3px 10px',
+                              fontSize: 12, color: 'var(--text-mid)', fontFamily: 'var(--font-display)',
+                            }}>
+                              📍 {t.distance_from_route_km}
                             </span>
-                            <span style={{ background: 'var(--cream)', borderRadius: 50, padding: '3px 10px', fontSize: 12, color: 'var(--text-mid)', fontFamily: 'var(--font-display)' }}>
-                              ⏱ {temple.estimated_stop_time_minutes} {t('route.min')}
+                            <span style={{
+                              background: 'var(--cream)', borderRadius: 50, padding: '3px 10px',
+                              fontSize: 12, color: 'var(--text-mid)', fontFamily: 'var(--font-display)',
+                            }}>
+                              ⏱ {t.estimated_stop_time_minutes} min
                             </span>
                           </div>
                         </div>
                         <p style={{ fontSize: 13, color: 'var(--text-light)', marginBottom: 4 }}>
-                          📌 {temple.location} {temple.deity && `· ${temple.deity}`}
+                          📌 {t.location} {t.deity && `· ${t.deity}`}
                         </p>
-                        <p style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.6 }}>{temple.why_visit}</p>
+                        <p style={{ fontSize: 15, color: 'var(--text-mid)', lineHeight: 1.6 }}>
+                          {t.why_visit}
+                        </p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Sidebar */}
+                {/* Sidebar: Plan + Insights */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                   {/* Optimized Plan */}
-                  <div style={{ background: 'white', borderRadius: 'var(--radius-lg)', border: '1px solid var(--cream-dark)', padding: '22px', boxShadow: '0 2px 12px var(--shadow)' }}>
+                  <div style={{
+                    background: 'white', borderRadius: 'var(--radius-lg)',
+                    border: '1px solid var(--cream-dark)', padding: '22px',
+                    boxShadow: '0 2px 12px var(--shadow)',
+                  }}>
                     <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--brown)', marginBottom: 16 }}>
-                      🗺️ {t('route.optimized_itinerary')}
+                      🗺️ Optimized Itinerary
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                       {(result.optimized_plan || []).map((stop, i) => (
                         <div key={i} style={{ display: 'flex', gap: 12, position: 'relative' }}>
+                          {/* Timeline line */}
                           {i < result.optimized_plan.length - 1 && (
-                            <div style={{ position: 'absolute', left: 15, top: 30, bottom: 0, width: 2, background: 'var(--cream-dark)', zIndex: 0 }} />
+                            <div style={{
+                              position: 'absolute', left: 15, top: 30, bottom: 0,
+                              width: 2, background: 'var(--cream-dark)', zIndex: 0,
+                            }} />
                           )}
-                          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--saffron)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 12, flexShrink: 0, zIndex: 1 }}>
+                          <div style={{
+                            width: 30, height: 30, borderRadius: '50%',
+                            background: 'var(--saffron)', color: 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 12,
+                            flexShrink: 0, zIndex: 1,
+                          }}>
                             {stop.stop_number}
                           </div>
                           <div style={{ paddingBottom: 20 }}>
-                            <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, color: 'var(--brown)', fontWeight: 600 }}>{stop.temple_name}</p>
+                            <p style={{ fontFamily: 'var(--font-display)', fontSize: 14, color: 'var(--brown)', fontWeight: 600 }}>
+                              {stop.temple_name}
+                            </p>
                             {stop.arrival_time_hint && (
-                              <p style={{ fontSize: 12, color: 'var(--saffron)', fontFamily: 'var(--font-display)' }}>🕐 {stop.arrival_time_hint}</p>
+                              <p style={{ fontSize: 12, color: 'var(--saffron)', fontFamily: 'var(--font-display)' }}>
+                                🕐 {stop.arrival_time_hint}
+                              </p>
                             )}
-                            <p style={{ fontSize: 13, color: 'var(--text-light)', lineHeight: 1.5, marginTop: 2 }}>{stop.arrival_order_reason}</p>
+                            <p style={{ fontSize: 13, color: 'var(--text-light)', lineHeight: 1.5, marginTop: 2 }}>
+                              {stop.arrival_order_reason}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -527,9 +592,14 @@ Suggest temples along this actual road route, create an optimized visiting plan.
 
                   {/* Insights */}
                   {result.insights?.length > 0 && (
-                    <div style={{ background: 'linear-gradient(135deg, rgba(200,150,12,0.1), rgba(232,101,10,0.06))', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(200,150,12,0.25)', padding: '22px' }}>
+                    <div style={{
+                      background: 'linear-gradient(135deg, rgba(200,150,12,0.1), rgba(232,101,10,0.06))',
+                      borderRadius: 'var(--radius-lg)',
+                      border: '1px solid rgba(200,150,12,0.25)',
+                      padding: '22px',
+                    }}>
                       <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--brown)', marginBottom: 14 }}>
-                        💡 {t('route.pandits_tips')}
+                        💡 Pandit's Tips
                       </h3>
                       <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {result.insights.map((tip, i) => (
@@ -542,18 +612,18 @@ Suggest temples along this actual road route, create an optimized visiting plan.
                     </div>
                   )}
 
-                  {/* Copy CTA */}
+                  {/* Share CTA */}
                   <button
                     className="btn-outline"
                     style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}
                     onClick={() => {
-                      const text = `🛕 ${t('route.copy_prefix')}: ${result.route_summary.start} → ${result.route_summary.destination}\n` +
+                      const text = `🛕 My Spiritual Route: ${result.route_summary.start} → ${result.route_summary.destination}\n` +
                         (result.recommended_temples || []).map(t => `• ${t.name} (${t.location})`).join('\n') +
-                        `\n\n${t('route.copy_suffix')}`;
-                      navigator.clipboard.writeText(text).then(() => alert(t('route.copied')));
+                        '\n\nPlanned via BharatMandir 🙏';
+                      navigator.clipboard.writeText(text).then(() => alert('Route copied to clipboard!'));
                     }}
                   >
-                    📋 {t('route.copy_route')}
+                    📋 Copy Route Summary
                   </button>
                 </div>
               </div>
