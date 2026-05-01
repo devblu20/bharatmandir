@@ -80,7 +80,8 @@ async def shutdown_event():
 app.include_router(temples.router)
 app.include_router(route_planner.router)
 app.include_router(admin.router)       # ← NEW: Admin routes
-
+from routers import spiritual_chat          # ← ADD
+app.include_router(spiritual_chat.router)
 # ─────────────────────────────────────────────
 # Root & Health Check
 # ─────────────────────────────────────────────
