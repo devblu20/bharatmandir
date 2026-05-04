@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from routers import temples, route_planner, admin
+from routers import temples, route_planner, admin, festivals, spiritual_chat
 from db.connection import get_pool, close_pool
 import os
 from dotenv import load_dotenv
@@ -84,8 +84,7 @@ app.add_middleware(
 app.include_router(temples.router)
 app.include_router(route_planner.router)
 app.include_router(admin.router)
-
-from routers import spiritual_chat
+app.include_router(festivals.router)
 app.include_router(spiritual_chat.router)
 
 # ─────────────────────────────────────────────

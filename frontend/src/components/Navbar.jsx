@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, PlusCircle, Menu, X, Home, Map, Navigation, CalendarDays } from 'lucide-react';
+import { Search, PlusCircle, Menu, X, Home, Map, Navigation, CalendarDays, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLang } from '../LangContext';
 
@@ -47,11 +47,12 @@ export default function Navbar() {
   }, [sidebarOpen]);
 
   const NAV_LINKS = [
-    { to: '/',              label: t('nav.home'),   icon: <Home size={17} /> },
-    { to: '/search',        label: t('nav.search'), icon: <Search size={17} /> },
-    { to: '/map',           label: t('nav.map'),    icon: <Map size={17} /> },
-    { to: '/route-planner', label: t('nav.route'),  icon: <Navigation size={17} /> },
-    { to: '/panchang',      label: '🪔 Panchang',   icon: <CalendarDays size={17} /> },
+    { to: '/',              label: t('nav.home'),      icon: <Home size={17} /> },
+    { to: '/search',        label: t('nav.search'),    icon: <Search size={17} /> },
+    { to: '/map',           label: t('nav.map'),       icon: <Map size={17} /> },
+    { to: '/route-planner', label: t('nav.route'),     icon: <Navigation size={17} /> },
+    { to: '/panchang',      label: '🪔 Panchang',      icon: <CalendarDays size={17} /> },
+    { to: '/festivals',     label: '🌸 Festivals',     icon: <Sparkles size={17} /> },
   ];
 
   const tickerText = '🔱 OM NAMAH SHIVAYA  ·  JAI SHRI RAM  ·  HAR HAR MAHADEV  ·  JAI MATA DI  ·  JAI GANESH  ·  HARE KRISHNA HARE RAM  ·  ';
@@ -134,6 +135,11 @@ export default function Navbar() {
               <span>Add Temple</span>
             </Link>
 
+            {/* ── Add Festival shortcut ── */}
+            <Link to="/admin/add-festival" className="nav-add-btn" style={{ background: 'linear-gradient(135deg,#C8960C,#a07008)' }}>
+              <span>＋ Festival</span>
+            </Link>
+
             <div className="nav-divider" />
 
             <select
@@ -213,6 +219,17 @@ export default function Navbar() {
           >
             <span className="sidebar-link-icon">🕉️</span>
             AI Spiritual Guide
+          </Link>
+
+          {/* ── Add Festival in sidebar ── */}
+          <Link
+            to="/admin/add-festival"
+            className={`sidebar-link${isActive('/admin/add-festival') ? ' active' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+            style={{ color: '#C8960C', fontWeight: 700 }}
+          >
+            <span className="sidebar-link-icon">🌸</span>
+            Add Festival
           </Link>
         </nav>
 
