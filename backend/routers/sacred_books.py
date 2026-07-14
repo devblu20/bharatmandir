@@ -1338,7 +1338,7 @@ def search_in_book(slug: str, q: str = Query(..., min_length=2)):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# PROGRESS
+# PROGRESS   
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ProgressUpdate(BaseModel):
@@ -1465,4 +1465,4 @@ def delete_bookmark(bookmark_id: int, session_id: str = Query(...)):
         deleted = cur.fetchone()
     if not deleted:
         raise HTTPException(status_code=404, detail="Bookmark not found")
-    return {"status": "deleted"}
+    return {"status": "deleted"}   
